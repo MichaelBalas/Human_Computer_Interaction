@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Task 3</title>
+
+<style>
+#start-btn {
+	position: absolute;
+	top: 150px;
+	left: 570px;
+	width: 200px;
+	height: 200px;
+	background-color: blue;
+	color: white;
+	font-size: 27pt;
+}
+</style>
+ 
+<script type="text/javascript">
+// globals
+var x = 0;
+var y = 0;
+var drawing = false;
+var started = false;
+var canvas;
+var ctx;
+var posx;
+var posy;
+var prex;
+var prey;
+var n;
+var width;
+var ns;
+var widths;
+var ni;
+var wi;
+var ti;
+var trial;
+var errors;
+var intersectionErrors = 0;
+var mouseUpErrors = 0;
+var time;
+var startTime;
+var endTime;
+var dTemp;
+var beginTime;
+
+function init(frm) {
+	document.getElementById('form').style.display="none";
+	dTemp = new Date();
+	beginTime = 'Start Time: ' + dTemp.getHours() + ":" + dTemp.getMinutes() + ":" + dTemp.getSeconds() + ":" + dTemp.getMilliseconds();
+    canvas = document.getElementById('canvas');
+    canvas.addEventListener("mousedown", onMouseDown, false);
+    canvas.addEventListener("mouseup", onMouseUp, false);
+    canvas.addEventListener("mousemove", drawLine, false);
+    ctx = canvas.getContext('2d');
+    ns = frm.n.value.split(',').map(function(x){return parseInt(x);});
+    widths = frm.w.value.split(',').map(function(x){return parseInt(x);});
+	trial = parseInt(frm.trials.value);
+	ni = 0;
+	wi = 0;
+	ti = 0;
+	n = ns[ni];
+	width = widths[wi];
+	errors = new Array(widths.length);
+	time = new Array(widths.length);
+	for(i=0;i<widths.length;i++){
+		errors[i] = new Array(ns.length);
+		time[i] = new Array(ns.length);
+		for(j=0;j<ns.length;j++){
+			errors[i][j]=0;
+			time[i][j]=0;
+		}
+	}
+    drawSpiral();
+}
+
+/*
+ * Get mouse event coordinate converted to canvas coordinate
+ * c: The canvas object
+ * e: A mouse event
+ */
+function toCanvasX(c, e) {
+  var posx = 0;
+ 
+  if (e.pageX)   {
+    posx = e.pageX;
+  } else if (e.clientX)   {
+    posx = e.clientX + document.body.scrollLeft
+      + document.documentElement.scrollLeft;
+  }
+  posx = posx - c.offsetLeft;
+  return posx;
+}
+ 
+function toCanvasY(c, e) {
+  var posy = 0;
+ 
+  if (e.pageY)   {
+    posy = e.pageY;
+  } else if (e.clientY)   {
+    posy = e.clientY + document.body.scrollTop
+      + document.documentElement.scrollTop;
+  }
+  posy = posy - c.offsetTop;
+ 
+  return posy;
+}
+
+function onMouseDown(e) {
+    drawing = true;
+    started = false
+	//startTime = new Date().getTime();
+}
+
+function onMouseUp(e) {
+	if(drawing){
+		endTime = new Date().getTime();
+		if(!checkSuccess()){
+			mouseUpErrors++;
+			handleError();
+		} else {
+			handleSuccess();
+		}
+		drawing = false;
+	}
+}
+
+function drawSpiral() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+    x = canvas.width / 2;
+    y = canvas.height / 2;
+    r = width/2;
+    start = 0;
+    end = Math.PI;
+    ctx.strokeStyle = '#00f'; //blue
+    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.moveTo(x+(n*2+1)*r, y);
+    ctx.lineTo(x+(n*2+3)*r, y);
+    ctx.moveTo(x+3*r, y);
+    ctx.lineTo(x+r, y);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+    for(i=0; i<n*2+2; i++){
+        if(i%2){
+            ctx.arc(x+r, y, r*(i+1), start, end, false);
+        } else {
+            ctx.arc(x, y, r*(i+1), start, end, false);
+        }
+        start += Math.PI;
+        end += Math.PI;
+    }
+    ctx.stroke();
+	drawing = false;
+	started = false;
+}
+
+function drawLine(e) {
+    posx = toCanvasX(this, e);
+    posy = toCanvasY(this, e);
+    //var message = "Mouse position: " + posx + "," + posy;
+    //ctx.clearRect(0, 0, 500, 100);
+    //ctx.font = '18pt Calibri';
+    //ctx.fillStyle = 'black';
+    //ctx.fillText(message, 10, 25);
+	ctx.strokeStyle = '#f00'; //red
+    if(drawing){
+        if(!started){
+            ctx.beginPath();
+            ctx.moveTo(posx, posy);
+			if(!checkStart()){
+				//handleError();
+			}
+            started = true;
+        } else {
+            ctx.lineTo(posx, posy);
+            ctx.stroke();
+			if(!checkSpiral()){
+				intersectionErrors++;
+				handleError();
+            }
+        }
+		prex = posx;
+		prey = posy;
+    }
+}
+
+function checkZone(x,y){
+	var zone;
+	if(y > canvas.height/2){
+        zone = Math.floor(dist(x, y, canvas.width/2, canvas.height/2) / width + 0.5) * 2;
+    } else {
+        zone = Math.floor(dist(x, y, (canvas.width+width)/2, canvas.height/2) / width) * 2 + 1;;
+    }
+	if(zone > n*2+3){
+		zone = n*2+3;
+	}
+	return zone;
+}
+
+function checkStart(){
+	var posZone = checkZone(posx,posy);
+	if(posZone > 1) return false;
+	startTime = new Date().getTime();
+	return true;
+}
+
+function checkSpiral(){
+    var preZone = checkZone(prex,prey);
+    var posZone = checkZone(posx,posy);
+    if(posZone - preZone > 1 || preZone - posZone > 1) return false;
+	return true;
+}
+
+function checkSuccess(){
+	var posZone = checkZone(posx,posy);
+	if(posZone < n*2+2) return false;
+	//alert("success");
+	return true;
+}
+
+function handleError(){
+	//alert("Error " + wi + " " + ni);
+	errors[wi][ni]++;
+	//drawSpiral();
+	drawing = true;//false
+	started = true;
+}
+
+function handleSuccess(){
+	//
+	//alert(endTime - startTime);
+	time[wi][ni]+=(endTime-startTime)/trial;
+	if(proceed()){
+		drawSpiral();
+		drawing = false;
+		started = false;
+	} else {
+		//output result
+		//alert("Finish!");
+		drawResults();
+	}
+}
+
+function drawResults(){
+	var result = "<table border=\"1\"><tr><th>Width</th><th>Turns</th><th>Difficulty</th><th>Time</th><th>Intersection Errors</th><th>Mouse-Up Errors</th><th>Errors</th></tr>";
+	for(i=0;i<widths.length;i++)
+		for(j=0;j<ns.length;j++){
+			result += "<tr><th>" + widths[i] + "</th><th>" + ns[j] + "</th><th>" + ns[j]*(2*ns[j]+3) + "</th><th>" + time[i][j] + " ms</th><th>" + intersectionErrors +
+			"</th><th>" + mouseUpErrors + "</th><th>" + errors[i][j] + "</th></tr>";
+		}
+	result += "</table>";
+	var d = new Date();
+	document.write(beginTime + '    ');
+	document.write('End Time: ' + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds());
+	document.write(result);
+}
+
+function dist(x,y,cx,cy){
+    dx = x - cx;
+    dy = y - cy;
+    return Math.sqrt(dx*dx+dy*dy);
+}
+
+function proceed(){
+	ti++;
+	if(ti == trial){
+		ti = 0;
+		ni++;
+	}
+	if(ni == ns.length){
+		ni = 0;
+		wi++;
+	}
+	if(wi == widths.length)
+		return false;
+	n = ns[ni];
+	width = widths[wi];
+	return true;
+}
+
+</script>
+ 
+</head>
+ 
+<body>
+<canvas id="canvas" width="1280" height="500" style="border: 1px dotted;">
+      This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+<form id='form'> 
+	Widths: <input type="text" name="w" value="40"/>
+	Number of turns: <input type="text" name="n" value="5"/>
+	Trials: <input type="text" name="trials", value="1">
+	<button id="start-btn" type="button" onClick="init(this.form)">Start</button><br />
+	
+</form>
+</body>
+</html>
