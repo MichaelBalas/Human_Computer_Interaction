@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Task 6</title>
+	<style>
+	.box {
+		margin-bottom: 2000px;
+		-webkit-transform: scale(2);
+		-ms-transform: scale(2);
+		-moz-transform: scale(2);
+		-o-transform: scale(2);
+		outline: 2px solid blue;
+	}
+	#start-button {
+		display: block;
+		margin-bottom: 2000px;
+	    width: 120px;
+	    height: 50px;
+	    border-radius: 5px;
+	    -moz-border-radius: 5px;
+	    border: 1px solid #20CD0C;
+	    background-color: #EDE09A;
+	    text-align: center;
+	    font-family:"Times New Roman",Georgia,Serif;
+	    color: #9583DE;
+	    font-size: 2em;
+	    cursor: pointer;
+	}
+	#end-button {
+		display: block;
+		margin-bottom: 100px;
+	    width: 120px;
+	    height: 50px;
+	    border-radius: 5px;
+	    -moz-border-radius: 5px;
+	    border: 1px solid #20CD0C;
+	    background-color: #EDE09A;
+	    text-align: center;
+	    font-family:"Times New Roman",Georgia,Serif;
+	    color: #9583DE;
+	    font-size: 2em;
+	    cursor: pointer;
+	    position: absolute;
+	    left: -40px;
+	}
+
+	#smallBox {
+		-webkit-transform: scale(0.2);
+		-ms-transform: scale(0.2);
+		-moz-transform: scale(0.2);
+		-o-transform: scale(0.2);
+		position: relative;
+		right: -1px;
+		bottom: 1px;
+	}
+	.indicator {
+		background-color: red;
+		width: 20px;
+		height: 20px;
+		margin-bottom: 2000px;
+	}
+	#rarr {
+		margin-bottom: -58px;
+		font-size: 80px;
+	}
+	#group_1 {
+		position: absolute;
+	}
+	#group_2 {
+		position: absolute;
+		left: 5000px;
+	}
+	#group_3 {
+		position: absolute;
+		left: 5000px; 
+		padding-right: 2000px;
+	}
+	</style>
+
+<script>
+	//global variables
+	var startTime;
+	var endTime;
+	var numLeftClicks = 0;
+	var numRightClicks = 0;
+	var numClicks = 0;
+	var vBoxIndex = 0;
+	var hBoxIndex = 0;
+	var err_1 = false; var err_2 = false; var err_3 = false;
+	var verticalScrollCounter = 0;
+	var horizontalScrollCounter = 0;
+	var dTemp;
+	var beginTime;
+	function init(frm) {
+		startTime = new Date().getTime();
+		dTemp = new Date();
+		beginTime = 'Start Time: ' + dTemp.getHours() + ":" + dTemp.getMinutes() + ":" + dTemp.getSeconds() + ":" + dTemp.getMilliseconds();
+		window.addEventListener("click", leftClick);
+		window.addEventListener('contextmenu', rightClick);
+		window.addEventListener('scroll', scroll);
+	}
+
+	function leftClick(e) {
+		numLeftClicks++;
+	}
+
+	function rightClick(e) {
+		numRightClicks++;
+	}
+
+	function scroll(e) {
+			if (vBoxIndex < 15) {
+			var vBoxTarget = document.getElementsByClassName("box")[vBoxIndex];
+			var hBoxTarget = document.getElementsByClassName("box")[hBoxIndex];
+			offSetTop = vBoxTarget.offsetTop;
+			offSetLeft = hBoxTarget.offsetLeft;
+			if (vBoxIndex >= 5) {
+				offSetTop += 12260;
+			}
+			if (vBoxIndex >= 10) {
+				offSetTop += 10205;
+			}
+			if (window.scrollY > (offSetTop + 30)) {
+				if (!(vBoxTarget.checked)) {
+					verticalScrollCounter++;
+					vBoxIndex++;
+				} else {
+					vBoxIndex++;
+				}
+			}
+			if (err_1) { offSetLeft += 5000; }
+			if (vBoxIndex > 4 && (!err_1)) { offSetLeft += 5000; }
+			if (err_2) { offSetLeft += 5000; }
+			if (vBoxIndex > 9 && (!err_2)) { offSetLeft += 5000; }
+			if (err_3) { offSetLeft += 5000; }
+
+			if (scrollX > (offSetLeft+30)) {
+				if (vBoxIndex < 5) { err_1 = true; horizontalScrollCounter++; }
+				if (vBoxIndex >= 5 && vBoxIndex <= 9) { err_2 = true; horizontalScrollCounter++; } 
+				if (vBoxIndex > 9) { err_3 = true; horizontalScrollCounter++; }
+			}
+		}
+
+	}
+
+	function fin(frm) {
+		endTime = new Date().getTime();
+		window.removeEventListener("click", leftClick);
+		window.removeEventListener("contextmenu", rightClick);
+		window.removeEventListener("scroll", scroll);
+		drawResults();
+	}
+
+	function drawResults() {
+		time = endTime - startTime;
+		numClicks = numLeftClicks + numRightClicks - 1;
+		numCheckedBoxes = document.querySelectorAll('input[type="checkbox"]:checked').length;
+		var numUncheckedBoxes = 15 - numCheckedBoxes;
+		var numErrors = (numClicks - numCheckedBoxes) + numUncheckedBoxes + verticalScrollCounter + horizontalScrollCounter;
+		var result = "<table border=\"1\"<tr><th>Time</th><th>Missed Checkboxes</th><th>Misclicks</th><th>Vertical Scroll Errors</th><th>Horizontal Scroll Errors</th><th>Total Errors</th></tr>";
+		result += "<tr><th>" + time + "ms</th><th>" + numUncheckedBoxes + "</th><th>" + (numClicks - numCheckedBoxes) + "</th><th>" + verticalScrollCounter + "</th><th>" + horizontalScrollCounter + "</th><th>" + numErrors + "</th></tr>";
+		result += "</table>";
+		var d = new Date();
+		document.write(beginTime + ' ');
+		document.write('End Time: ' + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds());
+		document.write(result);
+}
+</script>
+</head>
+<body>
+	<div id="group_1">
+		<input type="button" name="Start" id="start-button" onClick="init(this.form)" value="Start" />
+		<input class="box" type="checkbox" name="1_1"><br/>
+		<div class="indicator">
+			<input id="smallBox" class="box" type="checkbox" name="1_2"><br/>
+		</div>
+		<input class="box" type="checkbox" name="1_3"><br/>
+		<div class="indicator">
+			<input id="smallBox" class="box" type="checkbox" name="1_4"><br/>
+		</div>
+		<input class="box"type="checkbox" name="1_5"><br/>
+		<p id="rarr">&rarr;</p>
+		<div id="group_2">
+			<input class="box" type="checkbox" name="2_1"><br/>
+			<div class="indicator">
+				<input id="smallBox" class="box" type="checkbox" name="2_2"><br/>
+			</div>
+			<input class="box" type="checkbox" name="2_3"><br/>
+			<div class="indicator">
+				<input id="smallBox" class="box" type="checkbox" name="2_4"><br/>
+			</div>
+			<input class="box" type="checkbox" name="2_5"><br/>
+			<p id="rarr">&rarr;</p>
+		<div id="group_3">
+			<input class="box" type="checkbox" name="3_1"><br/>
+			<div class="indicator">
+				<input id="smallBox" class="box" type="checkbox" name="3_2"><br/>
+			</div>
+			<input class="box" type="checkbox" name="3_3"><br/>
+			<div class="indicator">
+				<input id="smallBox" class="box" type="checkbox" name="3_4"><br/>
+			</div>
+			<input class="box" type="checkbox" name="3_5"><br/>
+			<input type="button" name="End" id="end-button" onClick="fin(this.form)" value="End" />
+		</div>
+	</div>
+</div>
+</body>
+</html>
