@@ -1,0 +1,11 @@
+,AGE,SEX,Enrolled?,Program/Faculty,Touchpad_years,Mouse_years,touchpad_hours,mouse_hours,mac_use,mac_familiarity
+JG,21,M,Yes,Health Sciences,8,8,22,16,yes,yes
+S_T,21,M,Yes,Life Sciences,8,7,15,6,yes,yes
+A_C,20,M,Yes,Engineering,6,5,20,12,yes,yes
+G_C,19,M,Yes,Life Sciences,4,3,16,16,no,yes
+S_S,19,F,Yes,Engineering,3,3,15,15,no,yes
+T_L,18,M,Yes,Life Sciences,4,5,15,15,yes,yes
+V_D,20,M,Yes,Engineering,4,7,8,28,no,yes
+R_S,21,F,Yes,Health Sciences,5,5,20,6,yes,yes
+H_B,22,F,Yes,Health Sciences,3,4,12,24,yes,yes
+J_Z,21,F,Yes,Health Sciences,6,6,20,10,yes,yes
